@@ -1,8 +1,9 @@
+import 'package:favourites_sample/presentation/account_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../service/account_service.dart';
-import 'constants.dart'; // Added import for AccountWidget
+
 
 class FavouriteWidget extends ConsumerWidget {
   const FavouriteWidget({super.key});
@@ -11,12 +12,15 @@ class FavouriteWidget extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     /// Provides the list of data
     final favouriteList = ref.watch(favouriteListFutureProvider);
-
+    final accountValues = ref.watch(accountListFutureProvider);
     final selectedMenu = ref.watch(favouritesCategoryProvider);
 
     void updateCategory(String newValue) {
-      ref.read(accountCategoryProvider.notifier).state = newValue;
+      ref
+          .read(accountCategoryProvider.notifier)
+          .state = newValue;
     }
+    final List<String> menuLists = ['Account', 'Favorites'];
 
     return Scaffold(
       appBar: AppBar(
@@ -104,14 +108,16 @@ class FavouriteWidget extends ConsumerWidget {
                           ]);
                         }).toList();
                       },
-                      loading: () => [
+                      loading: () =>
+                      [
                         const DataRow(cells: [
                           DataCell(Text('Loading...')),
                           DataCell(Text('')),
                           DataCell(Text('')),
                         ]),
                       ],
-                      error: (error, stackTrace) => [
+                      error: (error, stackTrace) =>
+                      [
                         DataRow(cells: [
                           DataCell(
                             Text(
@@ -125,22 +131,56 @@ class FavouriteWidget extends ConsumerWidget {
                       ],
                     ),
                   )
-                else if (selectedMenu == 'Account')
-                  GestureDetector(
-                    onTap: () {
-                      updateCategory('Account'); // Update the selected menu
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      child: Text(
-                        'Account',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue, // Set desired color
-                        ),
+                else
+                  if (selectedMenu == 'Account')
+                  //  AccountWidget(),
+                    DataTable(
+                      columns: const [
+                        DataColumn(label: Text('First Name')),
+                        DataColumn(label: Text('Last Name')),
+                        DataColumn(label: Text('Id')),
+                        DataColumn(label: Text('Email')),
+                        DataColumn(label: Text('Avatar')),
+                      ],
+                      rows: accountValues.when(
+                        data: (accountList) {
+                          return accountList.map((account) {
+                            return DataRow(cells: [
+                              DataCell(Text(account.first_name.toString())),
+                              DataCell(Text(account.last_name.toString())),
+                              DataCell(Text(account.id.toString())),
+                              DataCell(Text(account.email.toString())),
+                              DataCell(Image.network(account.avatar)),
+                            ]);
+                          }).toList();
+                        },
+                        loading: () =>
+                        [
+                          const DataRow(cells: [
+                            DataCell(Text('Loading...')),
+                            DataCell(Text('')),
+                            DataCell(Text('')),
+                            DataCell(Text('')),
+                            DataCell(Text('')),
+                          ]),
+                        ],
+                        error: (error, stackTrace) =>
+                        [
+                          DataRow(cells: [
+                            DataCell(
+                              Text(
+                                'Error: $error',
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ),
+                            const DataCell(Text('')),
+                            const DataCell(Text('')),
+                            const DataCell(Text('')),
+                            const DataCell(Text('')),
+                          ]),
+                        ],
                       ),
                     ),
-                  ),
               ],
             ),
           ),
@@ -148,4 +188,5 @@ class FavouriteWidget extends ConsumerWidget {
       ),
     );
   }
-}
+  }
+
